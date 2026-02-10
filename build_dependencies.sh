@@ -110,6 +110,10 @@ touch pkg.h
 touch wpa_ctrl.h
 touch proc/readproc.h
 touch tr181api.h
+touch Dobby/DobbyProtocol.h
+touch Dobby/DobbyProxy.h
+touch Dobby/Public/Dobby/IDobbyProxy.h
+touch Dobby/IpcService/IpcFactory.h
 echo "files created successfully"
 echo "======================================================================================"
 
