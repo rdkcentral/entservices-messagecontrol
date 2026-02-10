@@ -94,6 +94,9 @@ echo " Empty mocks creation to avoid compilation errors"
 echo "======================================================================================"
 mkdir -p headers
 mkdir -p headers/proc
+mkdir -p headers/Dobby
+mkdir -p headers/Dobby/Public/Dobby
+mkdir -p headers/Dobby/IpcService
 echo "dir created successfully"
 echo "======================================================================================"
 
