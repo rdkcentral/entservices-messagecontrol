@@ -598,7 +598,7 @@ jobs:
           -DPLUGIN_STORAGE_MANAGER=ON
           -DUSE_THUNDER_R4=ON
           -DPLUGIN_L2Tests=ON
-          -DRDK_SERVICE_L2_TEST=ON
+          -DRDK_SERVICE_L2_TEST=${{env.RDK_SERVICE_L2_TEST}}
           -DDS_FOUND=ON
           -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
           &&
