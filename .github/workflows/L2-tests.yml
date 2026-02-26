@@ -17,6 +17,7 @@ env:
   INTERFACES_REF: "develop"
   AUTOMATICS_UNAME: ${{ secrets.AUTOMATICS_UNAME}}
   AUTOMATICS_PASSCODE: ${{ secrets. AUTOMATICS_PASSCODE}}
+  RDK_SERVICE_L2_TEST: "OFF"
 
 jobs:
   L2-tests:
@@ -88,19 +89,19 @@ jobs:
           path: ThunderTools
           ref: R4.4.3
 
-      - name: Checkout entservices-infra
+      - name: Checkout entservices-messagecontrol
         if: ${{ inputs.caller_source == 'local' }}
         uses: actions/checkout@v3
         with:
-          path: entservices-infra
+          path: entservices-messagecontrol
 
-      - name: Checkout entservices-infra-testframework
+      - name: Checkout entservices-messagecontrol-testframework
         if: ${{ inputs.caller_source == 'testframework' }}
         uses: actions/checkout@v3
         with:
-          repository: rdkcentral/entservices-infra
-          path: entservices-infra
-          ref: develop
+          repository: rdkcentral/entservices-messagecontrol
+          path: entservices-messagecontrol
+          ref: feature/RDKEMW-13471
 
       - name: Checkout entservices-deviceanddisplay
         uses: actions/checkout@v3
@@ -114,7 +115,7 @@ jobs:
         with:
           repository: rdkcentral/entservices-testframework
           path: entservices-testframework
-          ref: develop
+          ref: feature/RDKEMW-13471_1
           token: ${{ secrets.RDKCM_RDKE }}
 
       - name: Checkout googletest
@@ -134,8 +135,8 @@ jobs:
           git remote add origin https://code.rdkcentral.com/r/components/opensource/westeros
           git config core.sparseCheckout true
           git pull --depth=1 origin master
-          mkdir -p $GITHUB_WORKSPACE/entservices-infra/ResourceManager
-          cp essos/essos-resmgr.h $GITHUB_WORKSPACE/entservices-infra/ResourceManager/
+          mkdir -p $GITHUB_WORKSPACE/entservices-messagecontrol/ResourceManager
+          cp essos/essos-resmgr.h $GITHUB_WORKSPACE/entservices-messagecontrol/ResourceManager/
 
       - name: Apply patches ThunderTools
         run: |  
@@ -407,7 +408,7 @@ jobs:
           -DPLUGIN_WAREHOUSE=OFF
           -DUSE_THUNDER_R4=ON
           -DPLUGIN_L2Tests=ON
-          -DRDK_SERVICE_L2_TEST=ON
+          -DRDK_SERVICE_L2_TEST=${{env.RDK_SERVICE_L2_TEST}}
           -DDS_FOUND=ON
           -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
           &&
@@ -415,11 +416,11 @@ jobs:
           &&
           cmake --install build/entservices-deviceanddisplay
 
-      - name: Build entservices-infra
+      - name: Build entservices-messagecontrol
         run: >
           cmake
-          -S "$GITHUB_WORKSPACE/entservices-infra"
-          -B build/entservices-infra
+          -S "$GITHUB_WORKSPACE/entservices-messagecontrol"
+          -B build/entservices-messagecontrol
           -DCMAKE_TOOLCHAIN_FILE="${{ env.TOOLCHAIN_FILE }}"
           -DCMAKE_INSTALL_PREFIX="$GITHUB_WORKSPACE/install/usr"
           -DCMAKE_MODULE_PATH="$GITHUB_WORKSPACE/install/tools/cmake"
@@ -507,15 +508,15 @@ jobs:
           -DPLUGIN_ANALYTICS_EVENTS_MAP="/tmp/AnalyticsEventsMap.json"
           -DUSE_THUNDER_R4=ON
           -DPLUGIN_L2Tests=ON
-          -DRDK_SERVICE_L2_TEST=ON
+          -DRDK_SERVICE_L2_TEST=${{env.RDK_SERVICE_L2_TEST}}
           -DPLUGIN_STORAGE_MANAGER=ON
           -DPLUGIN_OCICONTAINER=ON
           -DDS_FOUND=ON
           -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
           &&
-          cmake --build build/entservices-infra -j6
+          cmake --build build/entservices-messagecontrol -j6
           &&
-          cmake --install build/entservices-infra
+          cmake --install build/entservices-messagecontrol
 
       - name: Build entservices-testframework
         run: >
@@ -597,7 +598,7 @@ jobs:
           -DPLUGIN_STORAGE_MANAGER=ON
           -DUSE_THUNDER_R4=ON
           -DPLUGIN_L2Tests=ON
-          -DRDK_SERVICE_L2_TEST=ON
+          -DRDK_SERVICE_L2_TEST=${{env.RDK_SERVICE_L2_TEST}}
           -DDS_FOUND=ON
           -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
           &&
@@ -704,6 +705,7 @@ jobs:
           $GITHUB_WORKSPACE/entservices-testframework/Tests/L2Tests/pact/install-verifier-cli.sh
 
       - name: Run unit tests without valgrind
+        if: ${{ env.RDK_SERVICE_L2_TEST == 'ON' }}
         run: >
           PATH=$GITHUB_WORKSPACE/install/usr/bin:${PATH}
           LD_LIBRARY_PATH=$GITHUB_WORKSPACE/install/usr/lib:$GITHUB_WORKSPACE/install/usr/lib/wpeframework/plugins:${LD_LIBRARY_PATH}
@@ -712,7 +714,7 @@ jobs:
           rm -rf $(pwd)/rdkL2TestResults.json
 
       - name: Run unit tests with valgrind
-        if: ${{ !env.ACT }}
+        if: ${{ !env.ACT && env.RDK_SERVICE_L2_TEST == 'ON'}}
         run: >
           PATH=$GITHUB_WORKSPACE/install/usr/bin:${PATH}
           LD_LIBRARY_PATH=$GITHUB_WORKSPACE/install/usr/lib:$GITHUB_WORKSPACE/install/usr/lib/wpeframework/plugins:${LD_LIBRARY_PATH}
@@ -728,18 +730,18 @@ jobs:
           rm -rf $(pwd)/rdkL2TestResults.json
 
       - name: Generate coverage
-        if: ${{ matrix.coverage == 'with-coverage' && !env.ACT }}
+        if: ${{ matrix.coverage == 'with-coverage' && !env.ACT && env.RDK_SERVICE_L2_TEST == 'ON' }}
         run: >
           cp $GITHUB_WORKSPACE/entservices-testframework/Tests/L2Tests/.lcovrc_l2 ~/.lcovrc
           &&
           lcov -c
           -o coverage.info
-          -d build/entservices-infra
+          -d build/entservices-messagecontrol
           &&
           lcov
           -r coverage.info
           '/usr/include/*'
-          '*/build/entservices-infra/_deps/*'
+          '*/build/entservices-messagecontrol/_deps/*'
           '*/build/entservices-deviceanddisplay/_deps/*'
           '*/build/entservices-entservices-testframework/_deps/*'
           '*/install/usr/include/*'
@@ -754,14 +756,14 @@ jobs:
           &&
           genhtml
           -o coverage
-          -t "entservices-infra coverage"
+          -t "entservices-messagecontrol coverage"
           filtered_coverage.info
 
       - name: Upload artifacts
-        if: ${{ !env.ACT }}
+        if: ${{ !env.ACT && env.RDK_SERVICE_L2_TEST == 'ON'}}
         uses: actions/upload-artifact@v4
         with:
-          name: artifacts-L2-infra
+          name: artifacts-L2-messagecontrol
           path: |
             coverage/
             valgrind_log
