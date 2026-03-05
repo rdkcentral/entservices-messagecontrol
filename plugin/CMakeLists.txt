@@ -55,6 +55,8 @@ target_link_libraries(${MODULE_NAME}
         ${NAMESPACE}Definitions::${NAMESPACE}Definitions
         ${NAMESPACE}Messaging::${NAMESPACE}Messaging)
 
+target_compile_options(${MODULE_NAME} PRIVATE -Wno-error=format)
+
 install(TARGETS ${MODULE_NAME} 
     DESTINATION lib/${STORAGE_DIRECTORY}/plugins)
 

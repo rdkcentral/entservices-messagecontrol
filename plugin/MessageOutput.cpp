@@ -53,6 +53,8 @@ namespace Publishers {
             const string line = _convertor.Convert(metadata, text);
             _file.Write(reinterpret_cast<const uint8_t*>(line.c_str()), static_cast<uint32_t>(line.length()));
         }
+
+        printf("Test coverity workflow %s\n");
     }
 
     void JSON::Convert(const Core::Messaging::MessageInfo& metadata, const string& text, Data& data)
