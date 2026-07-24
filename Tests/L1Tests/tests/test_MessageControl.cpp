@@ -75,8 +75,8 @@ protected:
         ICOMLink* COMLink() override { return nullptr; }
         void* QueryInterface(const uint32_t) override { return nullptr; }
         
-        void AddRef() const override {
-            Core::InterlockedIncrement(_refCount);
+        uint32_t AddRef() const override {
+            return Core::InterlockedIncrement(_refCount);
         }
 
         uint32_t Release() const override {
@@ -481,7 +481,7 @@ TEST_F(MessageControlL1Test, Observer_Activated_Deactivated_Terminated_Simple) {
     public:
         MockConnection(uint32_t id) : _id(id) {}
         uint32_t Id() const override { return _id; }
-        void AddRef() const override {}
+        uint32_t AddRef() const override { return 0; }
         uint32_t Release() const override { return 0; }
         void* QueryInterface(const uint32_t) override { return nullptr; }
         uint32_t RemoteId() const override { return _id; }
