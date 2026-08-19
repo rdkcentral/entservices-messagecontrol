@@ -17,9 +17,11 @@
  * limitations under the License.
  */
 
+
 #include "MessageOutput.h"
 #include "Module.h"
 #include <functional>
+
 
 namespace WPEFramework {
 
